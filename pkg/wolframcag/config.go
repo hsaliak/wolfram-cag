@@ -1,10 +1,8 @@
-package config
+package wolframcag
 
 import (
 	"os"
 	"strings"
-
-	"wolfapi/errs"
 )
 
 const (
@@ -38,7 +36,7 @@ func Resolve(in Inputs) (Config, error) {
 		apiKey = strings.TrimSpace(os.Getenv(EnvAPIKey))
 	}
 	if apiKey == "" {
-		return Config{}, errs.ErrMissingAPIKey
+		return Config{}, ErrMissingAPIKey
 	}
 
 	baseURL := strings.TrimSpace(in.BaseURL)

@@ -1,4 +1,4 @@
-package cli
+package wolframcag
 
 import (
 	"bufio"
@@ -6,13 +6,11 @@ import (
 	"os"
 	"strings"
 	"sync"
-
-	"wolfapi/api"
 )
 
 type batchResult struct {
 	label string
-	resp  api.GenericResponse
+	resp  GenericResponse
 	raw   []byte
 	err   error
 }

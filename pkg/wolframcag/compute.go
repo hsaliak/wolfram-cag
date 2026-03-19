@@ -1,11 +1,9 @@
-package cli
+package wolframcag
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
-	"wolfapi/api"
 )
 
 var (
@@ -35,8 +33,8 @@ var computeCmd = &cobra.Command{
 	Short: "Call WolframLanguageCompute API",
 	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		svc := api.New(ResolvedClient())
-		opts := api.ComputeOptions{TimeConstraint: computeTimeConstraint, Line: computeLine, MaxChars: computeMaxChars}
+		svc := NewService(ResolvedClient())
+		opts := ComputeOptions{TimeConstraint: computeTimeConstraint, Line: computeLine, MaxChars: computeMaxChars}
 
 		singleCode, useBatch, err := resolveComputeInput(args, computeCodeFile)
 		if err != nil {
@@ -44,7 +42,7 @@ var computeCmd = &cobra.Command{
 		}
 
 		if !useBatch {
-			resp, raw, err := svc.Compute(cmd.Context(), api.ComputeRequest{Code: singleCode}, opts)
+			resp, raw, err := svc.Compute(cmd.Context(), ComputeRequest{Code: singleCode}, opts)
 			if err != nil {
 				return err
 			}
@@ -57,7 +55,7 @@ var computeCmd = &cobra.Command{
 		}
 
 		results := runStringBatch(inputs, ResolvedConfig().Workers, func(in string) batchResult {
-			resp, raw, callErr := svc.Compute(cmd.Context(), api.ComputeRequest{Code: in}, opts)
+			resp, raw, callErr := svc.Compute(cmd.Context(), ComputeRequest{Code: in}, opts)
 			return batchResult{label: in, resp: resp, raw: raw, err: callErr}
 		})
 

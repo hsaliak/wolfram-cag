@@ -1,10 +1,6 @@
-package cli
+package wolframcag
 
-import (
-	"github.com/spf13/cobra"
-
-	"wolfapi/api"
-)
+import "github.com/spf13/cobra"
 
 var hintsCmd = &cobra.Command{
 	Use:   "hints <context-text>",
@@ -13,8 +9,8 @@ var hintsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		hintsText := args[0]
 
-		svc := api.New(ResolvedClient())
-		resp, raw, err := svc.Hints(cmd.Context(), api.HintsRequest{Context: hintsText})
+		svc := NewService(ResolvedClient())
+		resp, raw, err := svc.Hints(cmd.Context(), HintsRequest{Context: hintsText})
 		if err != nil {
 			return err
 		}

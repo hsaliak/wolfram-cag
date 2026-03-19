@@ -1,10 +1,6 @@
-package cli
+package wolframcag
 
-import (
-	"github.com/spf13/cobra"
-
-	"wolfapi/api"
-)
+import "github.com/spf13/cobra"
 
 var ctxAPICmd = &cobra.Command{
 	Use:   "context <context-text>",
@@ -13,8 +9,8 @@ var ctxAPICmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		contextText := args[0]
 
-		svc := api.New(ResolvedClient())
-		resp, raw, err := svc.Context(cmd.Context(), api.ContextRequest{Context: contextText})
+		svc := NewService(ResolvedClient())
+		resp, raw, err := svc.Context(cmd.Context(), ContextRequest{Context: contextText})
 		if err != nil {
 			return err
 		}

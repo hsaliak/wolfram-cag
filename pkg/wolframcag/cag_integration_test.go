@@ -1,4 +1,4 @@
-package api
+package wolframcag
 
 import (
 	"context"
@@ -8,9 +8,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"wolfapi/client"
-	"wolfapi/config"
 )
 
 func TestServiceEndpoints(t *testing.T) {
@@ -98,13 +95,13 @@ func TestServiceEndpoints(t *testing.T) {
 			}))
 			defer server.Close()
 
-			cfg := config.Config{
+			cfg := Config{
 				APIKey:      "test-key",
 				BaseURL:     server.URL + "/api/cag/v1",
 				Output:      "json",
 				TimeoutSecs: 2,
 			}
-			svc := New(client.New(cfg))
+			svc := NewService(New(cfg))
 
 			resp, _, err := tc.invoke(svc)
 			if err != nil {
@@ -129,13 +126,13 @@ func TestResultPlaintextFallback(t *testing.T) {
 	}))
 	defer server.Close()
 
-	cfg := config.Config{
+	cfg := Config{
 		APIKey:      "test-key",
 		BaseURL:     server.URL + "/api/cag/v1",
 		Output:      "text",
 		TimeoutSecs: 2,
 	}
-	svc := New(client.New(cfg))
+	svc := NewService(New(cfg))
 
 	resp, raw, err := svc.Result(context.Background(), "weather in boston", ResultOptions{Format: "plaintext"})
 	if err != nil {

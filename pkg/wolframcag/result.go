@@ -1,11 +1,9 @@
-package cli
+package wolframcag
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
-	"wolfapi/api"
 )
 
 var (
@@ -39,8 +37,8 @@ var resultCmd = &cobra.Command{
 	Short: "Call WolframAlphaResult API",
 	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		svc := api.New(ResolvedClient())
-		opts := api.ResultOptions{
+		svc := NewService(ResolvedClient())
+		opts := ResultOptions{
 			Assumption: resultAssumption,
 			Format:     resultFormat,
 			Units:      resultUnits,

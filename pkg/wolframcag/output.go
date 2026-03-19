@@ -1,15 +1,13 @@
-package cli
+package wolframcag
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
-
-	"wolfapi/api"
 )
 
-func printResponse(resp api.GenericResponse, raw []byte) error {
+func printResponse(resp GenericResponse, raw []byte) error {
 	cfg := ResolvedConfig()
 
 	if cfg.Output == "json" {

@@ -1,13 +1,10 @@
-package api
+package wolframcag
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"wolfapi/client"
 )
 
 type ContextRequest struct {
@@ -51,10 +48,10 @@ type ComputePayload struct {
 }
 
 type Service struct {
-	client *client.Client
+	client *Client
 }
 
-func New(c *client.Client) *Service {
+func NewService(c *Client) *Service {
 	return &Service{client: c}
 }
 
@@ -65,14 +62,8 @@ func (s *Service) Context(ctx context.Context, req ContextRequest) (GenericRespo
 	}
 
 	var resp GenericResponse
-	if err := client.DecodeJSON(body, &resp); err != nil {
-		// WolframAlphaResult may return plaintext (for example with
-		// format=plaintext). In that case, surface the raw body as Result.
-		fallback := strings.TrimSpace(string(body))
-		if fallback == "" {
-			return GenericResponse{}, nil, err
-		}
-		resp = GenericResponse{Result: fallback}
+	if err := DecodeJSON(body, &resp); err != nil {
+		return GenericResponse{}, nil, err
 	}
 
 	return resp, body, nil
@@ -85,35 +76,23 @@ func (s *Service) Hints(ctx context.Context, req HintsRequest) (GenericResponse,
 	}
 
 	var resp GenericResponse
-	if err := client.DecodeJSON(body, &resp); err != nil {
-		// WolframAlphaResult may return plaintext (for example with
-		// format=plaintext). In that case, surface the raw body as Result.
-		fallback := strings.TrimSpace(string(body))
-		if fallback == "" {
-			return GenericResponse{}, nil, err
-		}
-		resp = GenericResponse{Result: fallback}
+	if err := DecodeJSON(body, &resp); err != nil {
+		return GenericResponse{}, nil, err
 	}
 
 	return resp, body, nil
 }
 
 func (s *Service) Compute(ctx context.Context, req ComputeRequest, opts ComputeOptions) (GenericResponse, []byte, error) {
-	body, err := s.client.Do(ctx, http.MethodPost, "/WolframLanguageCompute", nil, ComputePayload{Code: req.Code, ComputeOptions: opts})
+	payload := ComputePayload{Code: req.Code, ComputeOptions: opts}
+	body, err := s.client.Do(ctx, http.MethodPost, "/WolframLanguageCompute", nil, payload)
 	if err != nil {
 		return GenericResponse{}, nil, err
 	}
 
 	var resp GenericResponse
-	if err := client.DecodeJSON(body, &resp); err != nil {
-		// WolframAlphaResult may return plaintext (for example with
-		// format=plaintext). In that case, surface the raw body as Result.
-		fallback := strings.TrimSpace(string(body))
-		if fallback == "" {
-			return GenericResponse{}, nil, err
-		}
-
-		resp = GenericResponse{Result: fallback}
+	if err := DecodeJSON(body, &resp); err != nil {
+		return GenericResponse{}, nil, err
 	}
 
 	return resp, body, nil
@@ -131,14 +110,11 @@ func (s *Service) Result(ctx context.Context, input string, opts ResultOptions) 
 	}
 
 	var resp GenericResponse
-	if err := client.DecodeJSON(body, &resp); err != nil {
-		// WolframAlphaResult may return plaintext (for example with
-		// format=plaintext). In that case, surface the raw body as Result.
+	if err := DecodeJSON(body, &resp); err != nil {
 		fallback := strings.TrimSpace(string(body))
 		if fallback == "" {
 			return GenericResponse{}, nil, err
 		}
-
 		resp = GenericResponse{Result: fallback}
 	}
 
@@ -148,12 +124,11 @@ func (s *Service) Result(ctx context.Context, input string, opts ResultOptions) 
 func BuildResultQuery(input string, opts ResultOptions) (url.Values, error) {
 	trimmedInput := strings.TrimSpace(input)
 	if trimmedInput == "" {
-		return nil, fmt.Errorf("input is required")
+		return nil, InvalidArgsError{Msg: "input is required"}
 	}
 
 	query := url.Values{}
 	query.Set("input", trimmedInput)
-
 	setIfNotEmpty(query, "assumption", opts.Assumption)
 	setIfNotEmpty(query, "format", opts.Format)
 	setIfNotEmpty(query, "units", opts.Units)

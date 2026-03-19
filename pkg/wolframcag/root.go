@@ -1,12 +1,9 @@
-package cli
+package wolframcag
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
-	"wolfapi/client"
-	"wolfapi/config"
 )
 
 type globalFlags struct {
@@ -20,14 +17,14 @@ type globalFlags struct {
 
 var flags globalFlags
 
-var resolvedConfig config.Config
-var resolvedClient *client.Client
+var resolvedConfig Config
+var resolvedClient *Client
 
 var rootCmd = &cobra.Command{
 	Use:   "wolfram-cag",
 	Short: "CLI for Wolfram CAG APIs",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		cfg, err := config.Resolve(config.Inputs{
+		cfg, err := Resolve(Inputs{
 			APIKey:      flags.apiKey,
 			BaseURL:     flags.baseURL,
 			Output:      flags.output,
@@ -44,7 +41,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		resolvedConfig = cfg
-		resolvedClient = client.New(cfg)
+		resolvedClient = New(cfg)
 
 		if flags.verbose {
 			fmt.Printf("resolved config: base-url=%s output=%s timeout-secs=%d workers=%d\n", cfg.BaseURL, cfg.Output, cfg.TimeoutSecs, cfg.Workers)
@@ -56,9 +53,9 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&flags.apiKey, "api-key", "", "Wolfram API key (overrides WOLFRAM_APP_ID)")
-	rootCmd.PersistentFlags().StringVar(&flags.baseURL, "base-url", config.DefaultBaseURL, "Wolfram CAG base URL")
-	rootCmd.PersistentFlags().StringVar(&flags.output, "output", config.DefaultOutput, "Output format: text|json")
-	rootCmd.PersistentFlags().IntVar(&flags.timeoutSecs, "timeout-secs", config.DefaultTimeout, "HTTP timeout in seconds")
+	rootCmd.PersistentFlags().StringVar(&flags.baseURL, "base-url", DefaultBaseURL, "Wolfram CAG base URL")
+	rootCmd.PersistentFlags().StringVar(&flags.output, "output", DefaultOutput, "Output format: text|json")
+	rootCmd.PersistentFlags().IntVar(&flags.timeoutSecs, "timeout-secs", DefaultTimeout, "HTTP timeout in seconds")
 	rootCmd.PersistentFlags().BoolVar(&flags.verbose, "verbose", false, "Enable verbose logging")
 	rootCmd.PersistentFlags().IntVar(&flags.workers, "workers", 4, "Number of worker goroutines for batch operations")
 
@@ -72,11 +69,11 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-func ResolvedConfig() config.Config {
+func ResolvedConfig() Config {
 	return resolvedConfig
 }
 
-func ResolvedClient() *client.Client {
+func ResolvedClient() *Client {
 	return resolvedClient
 }
 

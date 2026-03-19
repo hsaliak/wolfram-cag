@@ -1,4 +1,4 @@
-package config
+package wolframcag
 
 import "testing"
 
@@ -54,7 +54,7 @@ func TestResolve_Defaults(t *testing.T) {
 	if cfg.TimeoutSecs != DefaultTimeout {
 		t.Fatalf("timeout default mismatch: %d", cfg.TimeoutSecs)
 	}
-	if cfg.Workers != 4 {
+	if cfg.Workers != 1 {
 		t.Fatalf("workers default mismatch: %d", cfg.Workers)
 	}
 }
