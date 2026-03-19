@@ -39,8 +39,8 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
-		if cfg.Output != "text" && cfg.Output != "json" {
-			return fmt.Errorf("invalid --output %q: must be one of text,json", cfg.Output)
+		if err := validateOutputFormat(cfg.Output); err != nil {
+			return err
 		}
 
 		resolvedConfig = cfg
@@ -78,4 +78,11 @@ func ResolvedConfig() config.Config {
 
 func ResolvedClient() *client.Client {
 	return resolvedClient
+}
+
+func validateOutputFormat(output string) error {
+	if output == "text" || output == "json" {
+		return nil
+	}
+	return fmt.Errorf("invalid --output %q: must be one of text,json", output)
 }

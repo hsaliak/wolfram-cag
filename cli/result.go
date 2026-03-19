@@ -9,8 +9,15 @@ import (
 )
 
 var (
-	resultInput     string
-	resultInputFile string
+	resultInput      string
+	resultInputFile  string
+	resultAssumption string
+	resultFormat     string
+	resultUnits      string
+	resultLocation   string
+	resultLatLong    string
+	resultTimeout    string
+	resultMaxWidth   string
 )
 
 var resultCmd = &cobra.Command{
@@ -18,9 +25,18 @@ var resultCmd = &cobra.Command{
 	Short: "Call WolframAlphaResult API",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := api.New(ResolvedClient())
+		opts := api.ResultOptions{
+			Assumption: resultAssumption,
+			Format:     resultFormat,
+			Units:      resultUnits,
+			Location:   resultLocation,
+			LatLong:    resultLatLong,
+			Timeout:    resultTimeout,
+			MaxWidth:   resultMaxWidth,
+		}
 
 		if resultInputFile == "" {
-			resp, raw, err := svc.Result(cmd.Context(), resultInput)
+			resp, raw, err := svc.Result(cmd.Context(), resultInput, opts)
 			if err != nil {
 				return err
 			}
@@ -33,7 +49,7 @@ var resultCmd = &cobra.Command{
 		}
 
 		results := runStringBatch(inputs, ResolvedConfig().Workers, func(in string) batchResult {
-			resp, raw, callErr := svc.Result(cmd.Context(), in)
+			resp, raw, callErr := svc.Result(cmd.Context(), in, opts)
 			return batchResult{label: in, resp: resp, raw: raw, err: callErr}
 		})
 
@@ -63,4 +79,11 @@ func init() {
 
 	resultCmd.MarkFlagsMutuallyExclusive("input", "input-file")
 	resultCmd.MarkFlagsOneRequired("input", "input-file")
+	resultCmd.Flags().StringVar(&resultAssumption, "assumption", "", "Wolfram assumption string")
+	resultCmd.Flags().StringVar(&resultFormat, "format", "", "Result format hint")
+	resultCmd.Flags().StringVar(&resultUnits, "units", "", "Units preference")
+	resultCmd.Flags().StringVar(&resultLocation, "location", "", "Location hint")
+	resultCmd.Flags().StringVar(&resultLatLong, "latlong", "", "Latitude/longitude hint")
+	resultCmd.Flags().StringVar(&resultTimeout, "timeout", "", "API timeout parameter")
+	resultCmd.Flags().StringVar(&resultMaxWidth, "maxwidth", "", "Max width parameter")
 }

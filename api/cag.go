@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -20,11 +21,32 @@ type ComputeRequest struct {
 	Code string `json:"code"`
 }
 
+type ComputeOptions struct {
+	TimeConstraint int `json:"timeConstraint,omitempty"`
+	Line           int `json:"line,omitempty"`
+	MaxChars       int `json:"maxChars,omitempty"`
+}
+
+type ResultOptions struct {
+	Assumption string
+	Format     string
+	Units      string
+	Location   string
+	LatLong    string
+	Timeout    string
+	MaxWidth   string
+}
+
 type GenericResponse struct {
 	Result  string `json:"result"`
 	Code    int    `json:"code,omitempty"`
 	Success *bool  `json:"success,omitempty"`
 	UUID    string `json:"uuid,omitempty"`
+}
+
+type ComputePayload struct {
+	Code string `json:"code"`
+	ComputeOptions
 }
 
 type Service struct {
@@ -63,8 +85,8 @@ func (s *Service) Hints(ctx context.Context, req HintsRequest) (GenericResponse,
 	return resp, body, nil
 }
 
-func (s *Service) Compute(ctx context.Context, req ComputeRequest) (GenericResponse, []byte, error) {
-	body, err := s.client.Do(ctx, http.MethodPost, "/WolframLanguageCompute", nil, req)
+func (s *Service) Compute(ctx context.Context, req ComputeRequest, opts ComputeOptions) (GenericResponse, []byte, error) {
+	body, err := s.client.Do(ctx, http.MethodPost, "/WolframLanguageCompute", nil, ComputePayload{Code: req.Code, ComputeOptions: opts})
 	if err != nil {
 		return GenericResponse{}, nil, err
 	}
@@ -77,9 +99,11 @@ func (s *Service) Compute(ctx context.Context, req ComputeRequest) (GenericRespo
 	return resp, body, nil
 }
 
-func (s *Service) Result(ctx context.Context, input string) (GenericResponse, []byte, error) {
-	query := url.Values{}
-	query.Set("input", input)
+func (s *Service) Result(ctx context.Context, input string, opts ResultOptions) (GenericResponse, []byte, error) {
+	query, err := BuildResultQuery(input, opts)
+	if err != nil {
+		return GenericResponse{}, nil, err
+	}
 
 	body, err := s.client.Do(ctx, http.MethodGet, "/WolframAlphaResult", query, nil)
 	if err != nil {
@@ -92,4 +116,30 @@ func (s *Service) Result(ctx context.Context, input string) (GenericResponse, []
 	}
 
 	return resp, body, nil
+}
+
+func BuildResultQuery(input string, opts ResultOptions) (url.Values, error) {
+	if input == "" {
+		return nil, fmt.Errorf("input is required")
+	}
+
+	query := url.Values{}
+	query.Set("input", input)
+
+	setIfNotEmpty(query, "assumption", opts.Assumption)
+	setIfNotEmpty(query, "format", opts.Format)
+	setIfNotEmpty(query, "units", opts.Units)
+	setIfNotEmpty(query, "location", opts.Location)
+	setIfNotEmpty(query, "latlong", opts.LatLong)
+	setIfNotEmpty(query, "timeout", opts.Timeout)
+	setIfNotEmpty(query, "maxwidth", opts.MaxWidth)
+
+	return query, nil
+}
+
+func setIfNotEmpty(v url.Values, k, val string) {
+	if val == "" {
+		return
+	}
+	v.Set(k, val)
 }

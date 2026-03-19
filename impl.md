@@ -41,7 +41,7 @@ Implement a Go CLI that calls Wolfram CAG APIs with Cobra, typed errors, sync HT
 ### Phase 4 — Output model + UX hardening
 - [x] Define response structs for known fields
 - [x] Consistent `stderr` formatting and exit behavior
-- [ ] Add support for richer optional request params
+- [x] Add support for richer optional request params
 
 ### Phase 5 — Concurrency from day 1 (batch mode)
 - [x] Add `--input-file` processing for `result` and `compute`
@@ -49,9 +49,9 @@ Implement a Go CLI that calls Wolfram CAG APIs with Cobra, typed errors, sync HT
 - [x] Preserve deterministic output ordering
 
 ### Phase 6 — Tests + quality gates
-- [ ] Unit tests for config and validation
-- [ ] Integration tests with `httptest.Server`
-- [ ] Fuzz tests for decode/parsing surfaces
+- [x] Unit tests for config and validation
+- [x] Integration tests with `httptest.Server`
+- [x] Fuzz tests for decode/parsing surfaces
 - [x] `go test -race ./...` clean
 
 ## Current file layout
@@ -69,6 +69,11 @@ errs/
 go build ./...
 go test ./...
 go test -race ./...
+```
+
+```bash
+go test ./api -run=^$ -fuzz=Fuzz -fuzztime=2s
+go test ./client -run=^$ -fuzz=Fuzz -fuzztime=2s
 ```
 
 ## Notes

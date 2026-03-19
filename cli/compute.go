@@ -9,8 +9,11 @@ import (
 )
 
 var (
-	computeCode     string
-	computeCodeFile string
+	computeCode           string
+	computeCodeFile       string
+	computeTimeConstraint int
+	computeLine           int
+	computeMaxChars       int
 )
 
 var computeCmd = &cobra.Command{
@@ -18,9 +21,10 @@ var computeCmd = &cobra.Command{
 	Short: "Call WolframLanguageCompute API",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := api.New(ResolvedClient())
+		opts := api.ComputeOptions{TimeConstraint: computeTimeConstraint, Line: computeLine, MaxChars: computeMaxChars}
 
 		if computeCodeFile == "" {
-			resp, raw, err := svc.Compute(cmd.Context(), api.ComputeRequest{Code: computeCode})
+			resp, raw, err := svc.Compute(cmd.Context(), api.ComputeRequest{Code: computeCode}, opts)
 			if err != nil {
 				return err
 			}
@@ -33,7 +37,7 @@ var computeCmd = &cobra.Command{
 		}
 
 		results := runStringBatch(inputs, ResolvedConfig().Workers, func(in string) batchResult {
-			resp, raw, callErr := svc.Compute(cmd.Context(), api.ComputeRequest{Code: in})
+			resp, raw, callErr := svc.Compute(cmd.Context(), api.ComputeRequest{Code: in}, opts)
 			return batchResult{label: in, resp: resp, raw: raw, err: callErr}
 		})
 
@@ -63,4 +67,7 @@ func init() {
 
 	computeCmd.MarkFlagsMutuallyExclusive("code", "code-file")
 	computeCmd.MarkFlagsOneRequired("code", "code-file")
+	computeCmd.Flags().IntVar(&computeTimeConstraint, "time-constraint", 0, "Time constraint for compute request")
+	computeCmd.Flags().IntVar(&computeLine, "line", 0, "Line selection for compute request")
+	computeCmd.Flags().IntVar(&computeMaxChars, "max-chars", 0, "Max chars for compute request")
 }
