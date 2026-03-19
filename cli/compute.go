@@ -9,22 +9,42 @@ import (
 )
 
 var (
-	computeCode           string
 	computeCodeFile       string
 	computeTimeConstraint int
 	computeLine           int
 	computeMaxChars       int
 )
 
+func resolveComputeInput(args []string, codeFile string) (singleCode string, useBatch bool, err error) {
+	if codeFile != "" {
+		if len(args) != 0 {
+			return "", false, fmt.Errorf("compute accepts either positional code or --code-file, not both")
+		}
+		return "", true, nil
+	}
+
+	if len(args) != 1 {
+		return "", false, fmt.Errorf("compute requires exactly one positional code or --code-file")
+	}
+
+	return args[0], false, nil
+}
+
 var computeCmd = &cobra.Command{
-	Use:   "compute",
+	Use:   "compute <code>",
 	Short: "Call WolframLanguageCompute API",
+	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := api.New(ResolvedClient())
 		opts := api.ComputeOptions{TimeConstraint: computeTimeConstraint, Line: computeLine, MaxChars: computeMaxChars}
 
-		if computeCodeFile == "" {
-			resp, raw, err := svc.Compute(cmd.Context(), api.ComputeRequest{Code: computeCode}, opts)
+		singleCode, useBatch, err := resolveComputeInput(args, computeCodeFile)
+		if err != nil {
+			return err
+		}
+
+		if !useBatch {
+			resp, raw, err := svc.Compute(cmd.Context(), api.ComputeRequest{Code: singleCode}, opts)
 			if err != nil {
 				return err
 			}
@@ -62,11 +82,7 @@ var computeCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.Flags().StringVar(&computeCode, "code", "", "Wolfram Language code")
 	computeCmd.Flags().StringVar(&computeCodeFile, "code-file", "", "Path to file with newline-delimited Wolfram Language code")
-
-	computeCmd.MarkFlagsMutuallyExclusive("code", "code-file")
-	computeCmd.MarkFlagsOneRequired("code", "code-file")
 	computeCmd.Flags().IntVar(&computeTimeConstraint, "time-constraint", 0, "Time constraint for compute request")
 	computeCmd.Flags().IntVar(&computeLine, "line", 0, "Line selection for compute request")
 	computeCmd.Flags().IntVar(&computeMaxChars, "max-chars", 0, "Max chars for compute request")

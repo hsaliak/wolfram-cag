@@ -84,6 +84,8 @@ If neither is set, the CLI exits with an auth error.
 
 ---
 
+Core command text is positional (clean break): pass the main query/code/context as an argument, not a flag.
+
 ## Commands
 
 ### 1) `context`
@@ -91,7 +93,7 @@ Call WolframAlphaContext API.
 
 ```bash
 go run ./cmd/wolfram-cag context \
-  --context "I am helping a student learn calculus"
+  "I am helping a student learn calculus"
 ```
 
 ### 2) `result`
@@ -100,16 +102,16 @@ Call WolframAlphaResult API.
 Single input:
 
 ```bash
-go run ./cmd/wolfram-cag result --input "integrate x^2"
+go run ./cmd/wolfram-cag result "integrate x^2"
 ```
 
 With optional query parameters:
 
 ```bash
 go run ./cmd/wolfram-cag result \
-  --input "weather in Boston" \
   --units metric \
   --location Boston \
+  "weather in Boston" \
   --format plaintext
 ```
 
@@ -143,14 +145,14 @@ Call WolframLanguageCompute API.
 Single input:
 
 ```bash
-go run ./cmd/wolfram-cag compute --code "Integrate[x^2, x]"
+go run ./cmd/wolfram-cag compute "Integrate[x^2, x]"
 ```
 
 With optional compute parameters:
 
 ```bash
 go run ./cmd/wolfram-cag compute \
-  --code "Table[n^2, {n, 1, 10}]" \
+  "Table[n^2, {n, 1, 10}]" \
   --time-constraint 5 \
   --line 1 \
   --max-chars 1000
@@ -169,7 +171,7 @@ Call WolframLanguageHints API.
 
 ```bash
 go run ./cmd/wolfram-cag hints \
-  --context "How do I compute eigenvalues in Wolfram Language?"
+  "How do I compute eigenvalues in Wolfram Language?"
 ```
 
 ---
@@ -182,7 +184,7 @@ go run ./cmd/wolfram-cag hints \
 Example:
 
 ```bash
-go run ./cmd/wolfram-cag --output json result --input "integrate x^2"
+go run ./cmd/wolfram-cag --output json result "integrate x^2"
 ```
 
 ---

@@ -9,7 +9,6 @@ import (
 )
 
 var (
-	resultInput      string
 	resultInputFile  string
 	resultAssumption string
 	resultFormat     string
@@ -20,9 +19,25 @@ var (
 	resultMaxWidth   string
 )
 
+func resolveResultInput(args []string, inputFile string) (singleInput string, useBatch bool, err error) {
+	if inputFile != "" {
+		if len(args) != 0 {
+			return "", false, fmt.Errorf("result accepts either positional input or --input-file, not both")
+		}
+		return "", true, nil
+	}
+
+	if len(args) != 1 {
+		return "", false, fmt.Errorf("result requires exactly one positional input or --input-file")
+	}
+
+	return args[0], false, nil
+}
+
 var resultCmd = &cobra.Command{
-	Use:   "result",
+	Use:   "result <input>",
 	Short: "Call WolframAlphaResult API",
+	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := api.New(ResolvedClient())
 		opts := api.ResultOptions{
@@ -35,8 +50,13 @@ var resultCmd = &cobra.Command{
 			MaxWidth:   resultMaxWidth,
 		}
 
-		if resultInputFile == "" {
-			resp, raw, err := svc.Result(cmd.Context(), resultInput, opts)
+		singleInput, useBatch, err := resolveResultInput(args, resultInputFile)
+		if err != nil {
+			return err
+		}
+
+		if !useBatch {
+			resp, raw, err := svc.Result(cmd.Context(), singleInput, opts)
 			if err != nil {
 				return err
 			}
@@ -74,11 +94,7 @@ var resultCmd = &cobra.Command{
 }
 
 func init() {
-	resultCmd.Flags().StringVar(&resultInput, "input", "", "Input query string")
 	resultCmd.Flags().StringVar(&resultInputFile, "input-file", "", "Path to file with newline-delimited input queries")
-
-	resultCmd.MarkFlagsMutuallyExclusive("input", "input-file")
-	resultCmd.MarkFlagsOneRequired("input", "input-file")
 	resultCmd.Flags().StringVar(&resultAssumption, "assumption", "", "Wolfram assumption string")
 	resultCmd.Flags().StringVar(&resultFormat, "format", "", "Result format hint")
 	resultCmd.Flags().StringVar(&resultUnits, "units", "", "Units preference")

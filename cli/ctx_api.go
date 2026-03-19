@@ -6,27 +6,19 @@ import (
 	"wolfapi/api"
 )
 
-var ctxAPIText string
-
 var ctxAPICmd = &cobra.Command{
-	Use:   "context",
+	Use:   "context <context-text>",
 	Short: "Call WolframAlphaContext API",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if ctxAPIText == "" {
-			return cmd.Usage()
-		}
+		contextText := args[0]
 
 		svc := api.New(ResolvedClient())
-		resp, raw, err := svc.Context(cmd.Context(), api.ContextRequest{Context: ctxAPIText})
+		resp, raw, err := svc.Context(cmd.Context(), api.ContextRequest{Context: contextText})
 		if err != nil {
 			return err
 		}
 
 		return printResponse(resp, raw)
 	},
-}
-
-func init() {
-	ctxAPICmd.Flags().StringVar(&ctxAPIText, "context", "", "Conversation context text")
-	_ = ctxAPICmd.MarkFlagRequired("context")
 }
