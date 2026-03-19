@@ -66,7 +66,13 @@ func (s *Service) Context(ctx context.Context, req ContextRequest) (GenericRespo
 
 	var resp GenericResponse
 	if err := client.DecodeJSON(body, &resp); err != nil {
-		return GenericResponse{}, nil, err
+		// WolframAlphaResult may return plaintext (for example with
+		// format=plaintext). In that case, surface the raw body as Result.
+		fallback := strings.TrimSpace(string(body))
+		if fallback == "" {
+			return GenericResponse{}, nil, err
+		}
+		resp = GenericResponse{Result: fallback}
 	}
 
 	return resp, body, nil
@@ -80,7 +86,13 @@ func (s *Service) Hints(ctx context.Context, req HintsRequest) (GenericResponse,
 
 	var resp GenericResponse
 	if err := client.DecodeJSON(body, &resp); err != nil {
-		return GenericResponse{}, nil, err
+		// WolframAlphaResult may return plaintext (for example with
+		// format=plaintext). In that case, surface the raw body as Result.
+		fallback := strings.TrimSpace(string(body))
+		if fallback == "" {
+			return GenericResponse{}, nil, err
+		}
+		resp = GenericResponse{Result: fallback}
 	}
 
 	return resp, body, nil
@@ -94,7 +106,14 @@ func (s *Service) Compute(ctx context.Context, req ComputeRequest, opts ComputeO
 
 	var resp GenericResponse
 	if err := client.DecodeJSON(body, &resp); err != nil {
-		return GenericResponse{}, nil, err
+		// WolframAlphaResult may return plaintext (for example with
+		// format=plaintext). In that case, surface the raw body as Result.
+		fallback := strings.TrimSpace(string(body))
+		if fallback == "" {
+			return GenericResponse{}, nil, err
+		}
+
+		resp = GenericResponse{Result: fallback}
 	}
 
 	return resp, body, nil
@@ -113,7 +132,14 @@ func (s *Service) Result(ctx context.Context, input string, opts ResultOptions) 
 
 	var resp GenericResponse
 	if err := client.DecodeJSON(body, &resp); err != nil {
-		return GenericResponse{}, nil, err
+		// WolframAlphaResult may return plaintext (for example with
+		// format=plaintext). In that case, surface the raw body as Result.
+		fallback := strings.TrimSpace(string(body))
+		if fallback == "" {
+			return GenericResponse{}, nil, err
+		}
+
+		resp = GenericResponse{Result: fallback}
 	}
 
 	return resp, body, nil

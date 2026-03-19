@@ -116,3 +116,35 @@ func TestServiceEndpoints(t *testing.T) {
 		})
 	}
 }
+
+func TestResultPlaintextFallback(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/cag/v1/WolframAlphaResult" {
+			t.Fatalf("path mismatch: got %s", r.URL.Path)
+		}
+		if got := r.URL.Query().Get("format"); got != "plaintext" {
+			t.Fatalf("format query mismatch: got %q", got)
+		}
+		_, _ = w.Write([]byte("Query: weather in Boston\nResult: 18 °C"))
+	}))
+	defer server.Close()
+
+	cfg := config.Config{
+		APIKey:      "test-key",
+		BaseURL:     server.URL + "/api/cag/v1",
+		Output:      "text",
+		TimeoutSecs: 2,
+	}
+	svc := New(client.New(cfg))
+
+	resp, raw, err := svc.Result(context.Background(), "weather in boston", ResultOptions{Format: "plaintext"})
+	if err != nil {
+		t.Fatalf("expected plaintext fallback, got error: %v", err)
+	}
+	if !strings.Contains(resp.Result, "Query: weather in Boston") {
+		t.Fatalf("unexpected fallback result: %q", resp.Result)
+	}
+	if !strings.Contains(string(raw), "Result: 18") {
+		t.Fatalf("unexpected raw body: %q", string(raw))
+	}
+}
