@@ -1,6 +1,12 @@
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+
+	"github.com/spf13/cobra"
+
+	"wolfapi/api"
+)
 
 var (
 	resultInput     string
@@ -11,8 +17,41 @@ var resultCmd = &cobra.Command{
 	Use:   "result",
 	Short: "Call WolframAlphaResult API",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if resultInput == "" && resultInputFile == "" {
-			return cmd.Usage()
+		svc := api.New(ResolvedClient())
+
+		if resultInputFile == "" {
+			resp, raw, err := svc.Result(cmd.Context(), resultInput)
+			if err != nil {
+				return err
+			}
+			return printResponse(resp, raw)
+		}
+
+		inputs, err := readNonEmptyLines(resultInputFile)
+		if err != nil {
+			return err
+		}
+
+		results := runStringBatch(inputs, ResolvedConfig().Workers, func(in string) batchResult {
+			resp, raw, callErr := svc.Result(cmd.Context(), in)
+			return batchResult{label: in, resp: resp, raw: raw, err: callErr}
+		})
+
+		hadErr := false
+		for _, item := range results {
+			_ = printBatchHeader(item.label)
+			if item.err != nil {
+				hadErr = true
+				_ = printBatchError(item.label, item.err)
+				continue
+			}
+			if err := printResponse(item.resp, item.raw); err != nil {
+				return err
+			}
+		}
+
+		if hadErr {
+			return fmt.Errorf("result batch completed with errors")
 		}
 		return nil
 	},

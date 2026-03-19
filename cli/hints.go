@@ -1,6 +1,10 @@
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+
+	"wolfapi/api"
+)
 
 var hintsContext string
 
@@ -11,7 +15,14 @@ var hintsCmd = &cobra.Command{
 		if hintsContext == "" {
 			return cmd.Usage()
 		}
-		return nil
+
+		svc := api.New(ResolvedClient())
+		resp, raw, err := svc.Hints(cmd.Context(), api.HintsRequest{Context: hintsContext})
+		if err != nil {
+			return err
+		}
+
+		return printResponse(resp, raw)
 	},
 }
 

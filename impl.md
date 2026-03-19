@@ -31,28 +31,28 @@ Implement a Go CLI that calls Wolfram CAG APIs with Cobra, typed errors, sync HT
 - [x] Wire resolved config/client in root pre-run
 
 ### Phase 3 — Endpoint handlers (current)
-- [ ] Implement API calls for each subcommand
-- [ ] `context`: POST `{context}`
-- [ ] `result`: GET `input` (+ optional params later)
-- [ ] `compute`: POST `{code}`
-- [ ] `hints`: POST `{context}`
-- [ ] Print responses in text/json modes
+- [x] Implement API calls for each subcommand
+- [x] `context`: POST `{context}`
+- [x] `result`: GET `input` (+ optional params later)
+- [x] `compute`: POST `{code}`
+- [x] `hints`: POST `{context}`
+- [x] Print responses in text/json modes
 
 ### Phase 4 — Output model + UX hardening
-- [ ] Define response structs for known fields
-- [ ] Consistent `stderr` formatting and exit behavior
+- [x] Define response structs for known fields
+- [x] Consistent `stderr` formatting and exit behavior
 - [ ] Add support for richer optional request params
 
 ### Phase 5 — Concurrency from day 1 (batch mode)
-- [ ] Add `--input-file` processing for `result` and `compute`
-- [ ] Worker pool with goroutines/channels
-- [ ] Preserve deterministic output ordering
+- [x] Add `--input-file` processing for `result` and `compute`
+- [x] Worker pool with goroutines/channels
+- [x] Preserve deterministic output ordering
 
 ### Phase 6 — Tests + quality gates
 - [ ] Unit tests for config and validation
 - [ ] Integration tests with `httptest.Server`
 - [ ] Fuzz tests for decode/parsing surfaces
-- [ ] `go test -race ./...` clean
+- [x] `go test -race ./...` clean
 
 ## Current file layout
 ```text
@@ -60,6 +60,7 @@ cmd/wolfram-cag/main.go
 cli/
 config/
 client/
+api/
 errs/
 ```
 

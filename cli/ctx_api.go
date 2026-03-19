@@ -1,6 +1,10 @@
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+
+	"wolfapi/api"
+)
 
 var ctxAPIText string
 
@@ -11,7 +15,14 @@ var ctxAPICmd = &cobra.Command{
 		if ctxAPIText == "" {
 			return cmd.Usage()
 		}
-		return nil
+
+		svc := api.New(ResolvedClient())
+		resp, raw, err := svc.Context(cmd.Context(), api.ContextRequest{Context: ctxAPIText})
+		if err != nil {
+			return err
+		}
+
+		return printResponse(resp, raw)
 	},
 }
 
