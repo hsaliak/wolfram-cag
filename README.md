@@ -58,13 +58,13 @@ Examples:
 
 ```bash
 export WOLFRAM_APP_ID="your-api-key"
-go run ./cmd/wolfram-cag context --context "what is quantum tunneling?"
+go run ./cmd/wolfram-cag context "what is quantum tunneling?"
 ```
 
 or:
 
 ```bash
-go run ./cmd/wolfram-cag --api-key "your-api-key" context --context "what is quantum tunneling?"
+go run ./cmd/wolfram-cag --api-key "your-api-key" context "what is quantum tunneling?"
 ```
 
 If neither is set, the CLI exits with an auth error.
@@ -85,6 +85,8 @@ If neither is set, the CLI exits with an auth error.
 ---
 
 Core command text is positional (clean break): pass the main query/code/context as an argument, not a flag.
+
+For `result` with `--format plaintext`, the API may return plain text instead of JSON; the CLI handles this and prints the text response.
 
 ## Commands
 
@@ -109,14 +111,15 @@ With optional query parameters:
 
 ```bash
 go run ./cmd/wolfram-cag result \
+  "weather in Boston" \
   --units metric \
   --location Boston \
-  "weather in Boston" \
   --format plaintext
 ```
 
 Supported optional flags:
 
+- `--input-file` (batch mode; mutually exclusive with positional input)
 - `--assumption`
 - `--format`
 - `--units`
@@ -160,11 +163,22 @@ go run ./cmd/wolfram-cag compute \
 
 Batch mode:
 
+
 ```bash
 go run ./cmd/wolfram-cag compute --code-file ./wl_code.txt --workers 4
 ```
 
 Where `wl_code.txt` is newline-delimited Wolfram Language expressions.
+
+Notes:
+
+- `result` accepts either:
+  - positional input: `result "..."`, or
+  - file input: `result --input-file ...`
+- `compute` accepts either:
+  - positional code: `compute "..."`, or
+  - file input: `compute --code-file ...`
+- Do not pass positional input/code together with `--input-file` / `--code-file`.
 
 ### 4) `hints`
 Call WolframLanguageHints API.
