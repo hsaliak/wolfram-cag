@@ -40,7 +40,7 @@ func (c *Client) Do(ctx context.Context, method, endpointPath string, query url.
 	if payload != nil {
 		body, err := json.Marshal(payload)
 		if err != nil {
-			return nil, errs.DecodeError{Err: err}
+			return nil, errs.EncodeError{Err: err}
 		}
 		bodyReader = bytes.NewReader(body)
 	}

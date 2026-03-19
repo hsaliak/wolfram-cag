@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"wolfapi/client"
 )
@@ -119,12 +120,13 @@ func (s *Service) Result(ctx context.Context, input string, opts ResultOptions) 
 }
 
 func BuildResultQuery(input string, opts ResultOptions) (url.Values, error) {
-	if input == "" {
+	trimmedInput := strings.TrimSpace(input)
+	if trimmedInput == "" {
 		return nil, fmt.Errorf("input is required")
 	}
 
 	query := url.Values{}
-	query.Set("input", input)
+	query.Set("input", trimmedInput)
 
 	setIfNotEmpty(query, "assumption", opts.Assumption)
 	setIfNotEmpty(query, "format", opts.Format)

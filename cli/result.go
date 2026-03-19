@@ -58,7 +58,7 @@ var resultCmd = &cobra.Command{
 			_ = printBatchHeader(item.label)
 			if item.err != nil {
 				hadErr = true
-				_ = printBatchError(item.label, item.err)
+				_ = printBatchError(item.err)
 				continue
 			}
 			if err := printResponse(item.resp, item.raw); err != nil {

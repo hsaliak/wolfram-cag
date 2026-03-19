@@ -28,6 +28,18 @@ func (e HTTPStatusError) Error() string {
 	return fmt.Sprintf("http status %d: %s", e.Code, e.Body)
 }
 
+type EncodeError struct {
+	Err error
+}
+
+func (e EncodeError) Error() string {
+	return fmt.Sprintf("encode error: %v", e.Err)
+}
+
+func (e EncodeError) Unwrap() error {
+	return e.Err
+}
+
 type DecodeError struct {
 	Err error
 }

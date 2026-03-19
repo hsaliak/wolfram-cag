@@ -44,8 +44,8 @@ func printBatchHeader(label string) error {
 	return err
 }
 
-func printBatchError(label string, err error) error {
-	_, writeErr := fmt.Fprintf(os.Stderr, "== %s ==\nerror: %v\n", label, err)
+func printBatchError(err error) error {
+	_, writeErr := fmt.Fprintf(os.Stderr, "error: %v\n", err)
 	if writeErr != nil {
 		return writeErr
 	}
