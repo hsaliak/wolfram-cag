@@ -58,7 +58,7 @@ func Resolve(in Inputs) (Config, error) {
 
 	workers := in.Workers
 	if workers <= 0 {
-		workers = 4
+		workers = 1
 	}
 
 	return Config{
