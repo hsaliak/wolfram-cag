@@ -86,3 +86,34 @@ func runStringBatch(inputs []string, workers int, fn func(string) batchResult) [
 
 	return ordered
 }
+
+func resolveSingleArgOrFile(args []string, filePath, commandName, argName, fileFlag string) (single string, useBatch bool, err error) {
+	if filePath != "" {
+		if len(args) != 0 {
+			return "", false, fmt.Errorf("%s accepts either positional %s or --%s, not both", commandName, argName, fileFlag)
+		}
+		return "", true, nil
+	}
+
+	if len(args) != 1 {
+		return "", false, fmt.Errorf("%s requires exactly one positional %s or --%s", commandName, argName, fileFlag)
+	}
+
+	return args[0], false, nil
+}
+
+func printBatchResults(results []batchResult) (hadErr bool, err error) {
+	for _, item := range results {
+		_ = printBatchHeader(item.label)
+		if item.err != nil {
+			hadErr = true
+			_ = printBatchError(item.err)
+			continue
+		}
+		if err := printResponse(item.resp, item.raw); err != nil {
+			return hadErr, err
+		}
+	}
+
+	return hadErr, nil
+}

@@ -11,9 +11,7 @@ type ContextRequest struct {
 	Context string `json:"context"`
 }
 
-type HintsRequest struct {
-	Context string `json:"context"`
-}
+type HintsRequest = ContextRequest
 
 type ComputeRequest struct {
 	Code string `json:"code"`

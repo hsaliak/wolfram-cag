@@ -17,21 +17,6 @@ var (
 	resultMaxWidth   string
 )
 
-func resolveResultInput(args []string, inputFile string) (singleInput string, useBatch bool, err error) {
-	if inputFile != "" {
-		if len(args) != 0 {
-			return "", false, fmt.Errorf("result accepts either positional input or --input-file, not both")
-		}
-		return "", true, nil
-	}
-
-	if len(args) != 1 {
-		return "", false, fmt.Errorf("result requires exactly one positional input or --input-file")
-	}
-
-	return args[0], false, nil
-}
-
 var resultCmd = &cobra.Command{
 	Use:   "result <input>",
 	Short: "Call WolframAlphaResult API",
@@ -48,7 +33,7 @@ var resultCmd = &cobra.Command{
 			MaxWidth:   resultMaxWidth,
 		}
 
-		singleInput, useBatch, err := resolveResultInput(args, resultInputFile)
+		singleInput, useBatch, err := resolveSingleArgOrFile(args, resultInputFile, "result", "input", "input-file")
 		if err != nil {
 			return err
 		}
@@ -71,17 +56,9 @@ var resultCmd = &cobra.Command{
 			return batchResult{label: in, resp: resp, raw: raw, err: callErr}
 		})
 
-		hadErr := false
-		for _, item := range results {
-			_ = printBatchHeader(item.label)
-			if item.err != nil {
-				hadErr = true
-				_ = printBatchError(item.err)
-				continue
-			}
-			if err := printResponse(item.resp, item.raw); err != nil {
-				return err
-			}
+		hadErr, err := printBatchResults(results)
+		if err != nil {
+			return err
 		}
 
 		if hadErr {

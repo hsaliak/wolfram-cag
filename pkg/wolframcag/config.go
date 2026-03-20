@@ -21,14 +21,9 @@ type Config struct {
 	Workers     int
 }
 
-type Inputs struct {
-	APIKey      string
-	BaseURL     string
-	Output      string
-	TimeoutSecs int
-	Verbose     bool
-	Workers     int
-}
+// Inputs is an alias of Config for call sites that conceptually pass unresolved
+// configuration values into Resolve.
+type Inputs = Config
 
 func Resolve(in Inputs) (Config, error) {
 	apiKey := strings.TrimSpace(in.APIKey)

@@ -13,21 +13,6 @@ var (
 	computeMaxChars       int
 )
 
-func resolveComputeInput(args []string, codeFile string) (singleCode string, useBatch bool, err error) {
-	if codeFile != "" {
-		if len(args) != 0 {
-			return "", false, fmt.Errorf("compute accepts either positional code or --code-file, not both")
-		}
-		return "", true, nil
-	}
-
-	if len(args) != 1 {
-		return "", false, fmt.Errorf("compute requires exactly one positional code or --code-file")
-	}
-
-	return args[0], false, nil
-}
-
 var computeCmd = &cobra.Command{
 	Use:   "compute <code>",
 	Short: "Call WolframLanguageCompute API",
@@ -36,7 +21,7 @@ var computeCmd = &cobra.Command{
 		svc := NewService(ResolvedClient())
 		opts := ComputeOptions{TimeConstraint: computeTimeConstraint, Line: computeLine, MaxChars: computeMaxChars}
 
-		singleCode, useBatch, err := resolveComputeInput(args, computeCodeFile)
+		singleCode, useBatch, err := resolveSingleArgOrFile(args, computeCodeFile, "compute", "code", "code-file")
 		if err != nil {
 			return err
 		}
@@ -59,17 +44,9 @@ var computeCmd = &cobra.Command{
 			return batchResult{label: in, resp: resp, raw: raw, err: callErr}
 		})
 
-		hadErr := false
-		for _, item := range results {
-			_ = printBatchHeader(item.label)
-			if item.err != nil {
-				hadErr = true
-				_ = printBatchError(item.err)
-				continue
-			}
-			if err := printResponse(item.resp, item.raw); err != nil {
-				return err
-			}
+		hadErr, err := printBatchResults(results)
+		if err != nil {
+			return err
 		}
 
 		if hadErr {
